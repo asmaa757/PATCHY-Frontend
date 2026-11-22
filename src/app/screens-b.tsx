@@ -70,7 +70,12 @@ export function OCRScreen() {
 
 export function AssistantScreen({ role }: { role: "doctor" | "parent" }) {
   const { sel } = useNav(); const [msgs, setMsgs] = useState<{ from: "me" | "ai"; text: string }[]>([]); const [text, setText] = useState(""); const bottom = useRef<HTMLDivElement>(null);
-  useEffect(() => bottom.current?.scrollIntoView({ behavior: "smooth" }), [msgs]);
+  useEffect(() => {
+    bottom.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, [msgs]);
   const send = async () => { const t = text.trim(); if (!t) return; setText(""); setMsgs((m) => [...m, { from: "me", text: t }]); const r = await run(api.post("/ai/assistant", { question: t, childId: sel.childId ?? null })); if (r) setMsgs((m) => [...m, { from: "ai", text: `${r.answer}\n\n${r.disclaimer}` }]); };
   return (<Card className="mx-auto flex min-h-[560px] max-w-3xl flex-col p-5"><SectionTitle eyebrow={role === "doctor" ? "Clinical assistant" : "Parent guide"} title="Ask a question" action={<ChildPicker />} /><div className="mb-3"><SimulatedBadge /></div>
     <div className="flex-1 space-y-3 overflow-y-auto rounded-2xl bg-slate-50/70 p-4">{msgs.length === 0 && <p className="py-10 text-center text-sm text-muted-foreground">Try: "How do I help my child keep the patch on?"</p>}

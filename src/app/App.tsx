@@ -858,14 +858,45 @@ export default function App() {
     return () => clearInterval(t);
   }, [refreshUnread]);
 
+
   const go = useCallback((id: string, p?: Sel) => {
     if (p) setSel((s) => ({ ...s, ...p }));
 
     if (id !== "__keep__") {
+      if (id !== screen) {
+        window.history.pushState(
+          { patchyScreen: id },
+          "",
+          window.location.pathname
+        );
+      }
+
       setScreen(id);
       setMenu(false);
     }
+  }, [screen]);
+
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const previousScreen = event.state?.patchyScreen;
+
+      if (previousScreen) {
+        setScreen(previousScreen);
+      } else {
+        setScreen("home");
+      }
+
+      setMenu(false);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
   }, []);
+
 
   const switchToChild = useCallback(
     async (childId?: number, target = "session") => {
